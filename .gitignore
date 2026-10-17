@@ -1,0 +1,32 @@
+# Node
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+.npm/
+.pnpm-store/
+
+# Test sandbox: created and removed by test/harness.mjs, kept on failure
+.test-sandbox/
+
+# Release artifacts. These are build output, not source: `npm pack` ships the
+# tarball and .github/workflows/release.yml attaches it to a GitHub Release.
+# Regenerate locally with `npm run release:build`.
+dist/
+
+# Lockfiles: this package has no dependencies, so a lockfile would only add noise
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Editor and OS noise
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local scratch
+*.local
+*.log

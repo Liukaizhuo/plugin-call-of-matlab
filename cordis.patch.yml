@@ -1,0 +1,28 @@
+# dsh-matlab-simulink — bundle patch layer.
+#
+# One loader entry, addressed by package name. The Cordis loader resolves it
+# loader accepts directly, so this plugin needs no registry publication and no
+# dependency in the profile's package.json.
+#
+# from the profile's node_modules, where an npm install (or the bundled
+# tools/sync-to-profile.mjs) puts the package. It therefore carries no absolute
+# path from the machine that built it.
+- insert:
+    - id: dsh-matlab-simulink
+      name: "dsh-matlab-simulink"
+      config:
+        # Leave empty to auto-discover MATLABROOT / PATH / registry / default
+        # install roots. Set explicit roots to pin a specific release, e.g.
+        #   matlabRoots: ["E:\\Program Files\\MATLAB\\R2024a"]
+        matlabRoots: []
+        # Per-call default and ceiling for MATLAB wall-clock time.
+        timeoutMs: 600000
+        maxTimeoutMs: 3600000
+        # A MATLAB batch session is heavyweight: serialise by default.
+        maxConcurrent: 1
+        # Where per-run staging/working directories are created. Empty = OS temp.
+        tempDir: ""
+        maxArtifactBytes: 26214400
+        maxInlineImageBytes: 6291456
+        streamOutput: true
+        refreshDiscovery: false

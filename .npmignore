@@ -1,0 +1,22 @@
+# `npm pack` only ships what package.json `files` lists, so this file is a
+# second line of defence: it keeps development and machine-local files out of a
+# tarball even if the `files` list is loosened by mistake.
+.test-sandbox/
+dist/
+.git/
+.github/
+.vscode/
+.idea/
+node_modules/
+*.tgz
+*.zip
+*.log
+npm-debug.log*
+pnpm-debug.log*
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.DS_Store
+Thumbs.db
+Desktop.ini
+.npmrc

@@ -1,0 +1,39 @@
+{
+  "name": "dsh-matlab-simulink",
+  "version": "1.0.0",
+  "description": "Drive a locally installed MATLAB/Simulink from DSH tools: run .m scripts and inline code, simulate .slx models with block-parameter overrides, and export publication-quality (300 DPI / vector PDF) figures into the conversation.",
+  "icon": "./icon.png",
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "matlab", "simulink", "simulation"],
+  "license": "MIT",
+  "os": ["win32"],
+  "host": {
+    "entry": "./lib/index.js",
+    "patch": "./cordis.patch.yml"
+  },
+  "requires": {
+    "matlab": "R2023a or newer for -batch and exportgraphics",
+    "node": "^22.19 || >=24"
+  },
+  "tools": [
+    {
+      "name": "matlab_status",
+      "summary": "Report the resolved MATLAB/Simulink installation, how it was discovered, and optionally verify that it launches and list installed toolboxes."
+    },
+    {
+      "name": "matlab_run_script",
+      "summary": "Run an existing .m script headlessly and collect the figures and data files it produces."
+    },
+    {
+      "name": "matlab_run_code",
+      "summary": "Run MATLAB code directly, with any figure left open exported using academic styling."
+    },
+    {
+      "name": "simulink_run_model",
+      "summary": "Load a Simulink model, override StopTime and block parameters, simulate, and export logged signals as MAT and CSV."
+    },
+    {
+      "name": "matlab_export_figure",
+      "summary": "Re-render an existing figure at a new size, DPI, font, or format to satisfy journal requirements."
+    }
+  ]
+}

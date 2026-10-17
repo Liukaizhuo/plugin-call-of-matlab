@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Release artifacts are build output and are deliberately not committed: this
+# workflow builds them from the tagged tree and attaches them to the GitHub
+# Release. For npm consumers, the same tarball is what `npm publish` uploads.
+jobs:
+  release:
+    name: Build artifacts and publish a GitHub Release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # `git archive` needs a real commit, and make-source-zip reads HEAD.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Offline contract tests
+        run: npm run test:offline
+
+      - name: Verify the tag matches package.json
+        shell: bash
+        run: |
+          set -e
+          pkg_version="v$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "$pkg_version" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package.json ${pkg_version}" >&2
+            exit 1
+          fi
+          echo "Releasing $pkg_version"
+          {
+            echo "### dsh-matlab-simulink $pkg_version"
+            echo ""
+            echo "Artifacts are built from this tag and attached below."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build the npm tarball and smoke-test the packed entry
+        run: node tools/pack-check.mjs --build
+
+      - name: Build the source archive
+        run: node tools/make-source-zip.mjs
+
+      - name: Upload artifacts for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            dist/*.tgz
+            dist/*-source.zip
+          if-no-files-found: error
+
+      - name: Publish the GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tgz
+            dist/*-source.zip
+          generate_release_notes: true
+          body: |
+            **MATLAB R2023a or newer on Windows is required.**
+
+            Two assets are attached:
+
+            | Asset | Use |
+            | --- | --- |
+            | `dsh-matlab-simulink-<version>.tgz` | The npm package. Extract it into your DSH profile's `node_modules`; no npm client needed. |
+            | `dsh-matlab-simulink-<version>-source.zip` | The repository at this tag, if you would rather read it without cloning. |
+
+            Then register the plugin in your profile's `cordis.patch.yml` and
+            restart DSH.
+
+            Step-by-step instructions, including the exact YAML entry and a
+            verification command, are in
+            [docs/INSTALL.md](https://github.com/Liukaizhuo/plugin-call-of-matlab/blob/main/docs/INSTALL.md).
+            Configuration, usage, and the MATLAB behaviours this plugin works
+            around are in
+            [README.md](https://github.com/Liukaizhuo/plugin-call-of-matlab#readme).
+
+      # Publishing to npm is opt-in: it runs only when an NPM_TOKEN secret is
+      # configured, so a plain tag push never fails for lack of one.
+      - name: Publish to npm (optional)
+        if: github.ref_type == 'tag' && env.NPM_TOKEN != ''
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          set -e
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$HOME/.npmrc"
+          npm publish --access public

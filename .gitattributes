@@ -1,0 +1,19 @@
+# Normalize line endings in the repository to LF.
+#
+# Git on Windows defaults to CRLF in the working tree, which makes diffs noisy
+# and embeds CRLF in published tarballs. With `eol=lf` the repository, the
+# checked-out files, and `npm pack` output all agree.
+* text=auto eol=lf
+
+# Binary and release artifacts must never be line-ending converted.
+*.tgz binary
+*.zip binary
+*.png binary
+*.slx binary
+*.mat binary
+*.pdf binary
+
+# Generated or vendored content: keep out of diffs and language statistics.
+dist/*.tgz binary
+dist/*.zip binary
+.github/workflows/*.yml text eol=lf
