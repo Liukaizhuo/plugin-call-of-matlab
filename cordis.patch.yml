@@ -1,17 +1,19 @@
 # dsh-matlab-simulink — bundle patch layer.
 #
 # One loader entry, addressed by package name. The Cordis loader resolves it
-# loader accepts directly, so this plugin needs no registry publication and no
-# dependency in the profile's package.json.
+# from the profile's node_modules, which is where an npm install (or
+# `tools/sync-to-profile.mjs`) puts the package, so this file stays portable:
+# it carries no absolute path from the machine that built it.
 #
-# from the profile's node_modules, where an npm install (or the bundled
-# tools/sync-to-profile.mjs) puts the package. It therefore carries no absolute
-# path from the machine that built it.
+# When the plugin is used straight from a checkout instead of an install, add a
+# profile entry pointing at the checkout's entry module, or run
+#   node tools/sync-to-profile.mjs
+# which installs the copy and writes that entry for you.
 - insert:
     - id: dsh-matlab-simulink
       name: "dsh-matlab-simulink"
       config:
-        # Leave empty to auto-discover MATLABROOT / PATH / registry / default
+        # Leave empty to auto-discover MATLAB_ROOT / PATH / registry / default
         # install roots. Set explicit roots to pin a specific release, e.g.
         #   matlabRoots: ["E:\\Program Files\\MATLAB\\R2024a"]
         matlabRoots: []
