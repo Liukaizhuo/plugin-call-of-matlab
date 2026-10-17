@@ -63,3 +63,10 @@ in this release:
 - Tool results carrying `undefined` properties failed the registry's
   lossless-JSON check at dispatch time. Results are now normalized before they
   leave a tool, and the harness asserts the contract on every call.
+- When no MATLAB installation was found, the plugin registered no tools at all,
+  which left an agent with no way to discover why it was inactive and made the
+  offline test suite fail on any machine without MATLAB. The tools are now always
+  registered; a run reports the actionable reason and `matlab_status` lists what
+  discovery tried. A configured `matlabRoots` that contains no `bin\matlab.exe`
+  still fails the plugin load, because that is a misconfiguration rather than a
+  missing prerequisite.

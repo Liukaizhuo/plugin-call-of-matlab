@@ -269,6 +269,17 @@ plugin does not work.
    `exportgraphics` (vector) or `print` (raster), then are published as
    attachments.
 
+### Behaviour when MATLAB is missing
+
+The five tools are registered even when no MATLAB installation is found. That is
+deliberate: an agent that sees *no* tools cannot discover why the plugin is
+inactive, whereas a call to any tool returns an actionable reason and
+`matlab_status` reports what was tried and how to fix it. The plugin log carries
+the same warning at load time.
+
+An explicitly configured `matlabRoots` that contains no `bin\matlab.exe` is
+treated differently — that is a misconfiguration and fails the plugin load.
+
 ---
 
 ## Development
@@ -289,9 +300,10 @@ node tools\sync-to-profile.mjs   # copy, verify, register
 
 | Symptom | Fix |
 | --- | --- |
-| `MATLAB: NOT FOUND` | Set `MATLAB_ROOT`, put `matlab.exe` on `PATH`, or set `config.matlabRoots`. |
+| `MATLAB: NOT FOUND` | The tools are registered but every run fails. Set `MATLAB_ROOT`, put `matlab.exe` on `PATH`, or set `config.matlabRoots`; `matlab_status` lists what was tried. |
 | `value is not lossless JSON` at dispatch | The running DSH has an older plugin build in memory. Restart DSH, and re-run `node tools\sync-to-profile.mjs`. |
-| Tools never appear | Confirm the `cordis.patch.yml` entry exists (`--check` reports it) and that DSH was restarted. DSH only hot-reloads when `hmr.root` is configured. |
+| Tools never appear at all | Confirm the `cordis.patch.yml` entry exists (`--check` reports it) and that DSH was restarted. DSH only hot-reloads when `hmr.root` is configured. |
+| `git push` fails with a TLS / revocation error | A second git on `PATH` is being used. Use the one in `C:\Program Files\Git\cmd` (PowerShell picks it up); see [docs/INSTALL.md](docs/INSTALL.md). |
 | A run hangs, then times out | Expected for long simulations; raise `timeoutMs` or pass a larger `timeout_s`. Expiry force-kills the MATLAB process tree. |
 | Figure is a `.pdf` but nothing renders inline | By design: PDF is vector and not inlined. Use `export_format: "png"` when you want it visible in the chat. |
 | Relative paths in my script write to the wrong folder | The script's own directory is the working directory. Pass `working_dir` to override it. |

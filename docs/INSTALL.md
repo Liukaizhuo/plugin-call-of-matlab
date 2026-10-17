@@ -106,10 +106,11 @@ toolboxes.
 | Symptom | Cause and fix |
 | --- | --- |
 | Tools never appear | No `cordis.patch.yml` entry, or DSH was not restarted. `node tools\sync-to-profile.mjs --check` reports both. |
-| `MATLAB: NOT FOUND` | Set `MATLAB_ROOT`, put `matlab.exe` on `PATH`, or set `config.matlabRoots`. |
+| Tools appear but every call says MATLAB is missing | The plugin registers its tools even without MATLAB so the problem is discoverable. Run `matlab_status` for the reason and set `MATLAB_ROOT`, put `matlab.exe` on `PATH`, or set `config.matlabRoots`. |
 | `value is not lossless JSON` at dispatch | The running DSH has an older build in memory. Restart DSH and re-run the sync. |
 | `profile directory not found` | Pass `--profile <dir>` pointing at the profile that contains `cordis.patch.yml`. |
 | Install copy is incomplete | Re-run the sync; it verifies every required file before declaring success. If DSH is holding files open, close it and retry. |
+| `git push` fails with `CRYPT_E_NO_REVOCATION_CHECK` or `unable to get local issuer certificate` | A second git on `PATH` (for example an MSYS2/UCRT64 build) is being used, and it cannot validate GitHub's certificate chain on this network. Use the Git for Windows one at `C:\Program Files\Git\cmd\git.exe`; PowerShell and `cmd` resolve it by default, Git Bash may not. |
 
 ## Uninstall
 
