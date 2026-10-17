@@ -70,3 +70,17 @@ in this release:
   discovery tried. A configured `matlabRoots` that contains no `bin\matlab.exe`
   still fails the plugin load, because that is a misconfiguration rather than a
   missing prerequisite.
+- `matlab_status` returned its installation as an object under `matlab`, while the
+  declared output schema described `matlab` as a string, so the registry rejected
+  the call with `value.matlab must be a string`. Run results keep `matlab` as a
+  display string; the structured descriptor is now `installation`. The harness
+  validates every result against the tool's own output schema, so this class of
+  mismatch cannot regress silently.
+- `figure_width`, `figure_height` and `dpi` were effectively ignored. Figures were
+  exported with `exportgraphics(..., 'Resolution', dpi)`, which scales the
+  figure's on-screen pixel size by `dpi / screenDpi`; a 7×5 in request produced a
+  17.2×9.7 in page, and because the old code set `Position` to `width × dpi`
+  pixels the on-screen figure was inflated as well. Export now uses
+  `print -r<dpi>` with `PaperSize`/`PaperPosition` pinned in inches, which honours
+  the request exactly: 7×5 in at 300 dpi yields 2100×1500 px and a 7.00×5.00 in
+  PDF page.

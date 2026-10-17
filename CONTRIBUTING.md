@@ -86,6 +86,16 @@ each has a comment in the code explaining why.
   `StopTime`; always pass a quoted char expression.
 - **Never generate a script name whose stem starts with `_`.** MATLAB's parser
   rejects such files outright.
+- **Never export figures with `exportgraphics(..., 'Resolution', dpi)`.** It
+  scales the figure's on-screen pixel size by `dpi / screenDpi`, so the requested
+  `figure_width`/`figure_height` and `dpi` are ignored and the page comes out at
+  an arbitrary size (a 7×5 in request produced 17.2×9.7 in). Use `print -r<dpi>`
+  after pinning `PaperSize`, `PaperPosition` and `PaperPositionMode = 'manual'`
+  in inches, which reproduces the request exactly.
+- **Never declare an output-schema field with a type the result does not use.**
+  The registry validates `output.schema` at dispatch time and rejects the whole
+  call on a mismatch. `matlab` is a display string on run results; the structured
+  installation is `installation`.
 - **Always kill the process tree with `taskkill /F /T` before releasing pipes.**
   MATLAB's helper processes inherit the stdio pipes, so awaiting `close` alone
   delays cancellation by minutes.

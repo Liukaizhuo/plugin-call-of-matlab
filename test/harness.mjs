@@ -88,8 +88,46 @@ async function callTool(registered, toolName, args, signal) {
   if (!definition) throw new Error(`tool not registered: ${toolName} (have ${[...registered.keys()].join(', ')})`)
   const value = await definition.execute(args, { signal, cwd: sandbox, agent: undefined })
   assertLosslessJson(toolName, value)
+  assertOutputSchema(definition, value)
   const blocks = definition.output.render(args, value)
   return { value, blocks, definition }
+}
+
+/**
+ * Validate a result against the tool's own declared `output.schema`.
+ *
+ * The registry performs this at dispatch time and rejects the whole call when a
+ * declared type does not match. That is how `matlab_status` returning an object
+ * for a field declared as a string stayed hidden until a live call, so it is
+ * checked here on every call. Only the schema constructs this plugin declares
+ * are implemented.
+ */
+function assertOutputSchema(definition, value) {
+  const schema = definition.output?.schema
+  if (!schema) return
+  const fail = (path, expected, actual) => {
+    throw new Error(`[${definition.name}] output schema mismatch at ${path}: expected ${expected}, got ${actual}`)
+  }
+  const typeOf = node => {
+    if (node === null) return 'null'
+    if (Array.isArray(node)) return 'array'
+    return typeof node
+  }
+  const walk = (node, nodeSchema, path) => {
+    if (!nodeSchema) return
+    const actual = typeOf(node)
+    if (nodeSchema.type && nodeSchema.type !== actual) fail(path, nodeSchema.type, actual)
+    if (nodeSchema.type === 'array' && nodeSchema.items) {
+      node.forEach((entry, index) => walk(entry, nodeSchema.items, `${path}[${index}]`))
+    }
+    if (nodeSchema.type === 'object' && node && typeof node === 'object') {
+      for (const [key, propertySchema] of Object.entries(nodeSchema.properties ?? {})) {
+        if (!(key in node)) continue
+        walk(node[key], propertySchema, `${path}.${key}`)
+      }
+    }
+  }
+  walk(value, schema, definition.name)
 }
 
 /**
